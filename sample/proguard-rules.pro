@@ -15,3 +15,8 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+
+#通过反射调用了RefreshDrawable实现者的构造方法，故keep所有实现者类名及它们的构造方法
+-keep class * extends com.baoyz.widget.RefreshDrawable {
+    <init>(android.content.Context, com.baoyz.widget.PullRefreshLayout);
+}

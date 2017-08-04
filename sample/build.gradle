@@ -1,19 +1,27 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        config {
+            keyAlias 'bank'
+            keyPassword 'bank123456'
+            storeFile file('C:/Users/yzsh-sym/keystores/bank.keystore')
+            storePassword 'bank123456'
+        }
+    }
     compileSdkVersion 21
-    buildToolsVersion '25.0.0'
-
+    buildToolsVersion '25.0.3'
     defaultConfig {
         applicationId "com.baoyz.pullrefreshlayout.sample"
-        minSdkVersion 11
+        minSdkVersion 14
         targetSdkVersion 21
         versionCode 1
         versionName "1.0"
     }
     buildTypes {
         release {
-            minifyEnabled false
+            signingConfig signingConfigs.config
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }

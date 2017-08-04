@@ -3,6 +3,12 @@
     <!-- Base application theme. -->
     <style name="AppTheme" parent="android:Theme.Holo.Light.DarkActionBar">
         <!-- Customize your theme here. -->
+        <item name="refreshLayoutStyle">@style/refreshLayoutStyle</item>
+    </style>
+
+    <style name="refreshLayoutStyle" parent="RefreshLayoutDefaultStyle">
+        <item name="refreshType">custom</item>
+        <item name="refreshDrawableClass">com.baoyz.pullrefreshlayout.sample.ArtdenDrawableV2</item>
     </style>
 
 </resources>

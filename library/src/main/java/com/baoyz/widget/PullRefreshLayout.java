@@ -5,6 +5,7 @@ import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v4.view.ViewCompat;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.MotionEvent;
@@ -18,6 +19,8 @@ import android.view.animation.Transformation;
 import android.widget.AbsListView;
 import android.widget.ImageView;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.security.InvalidParameterException;
 
 /**
@@ -35,6 +38,7 @@ public class PullRefreshLayout extends ViewGroup {
     public static final int STYLE_WATER_DROP = 2;
     public static final int STYLE_RING = 3;
     public static final int STYLE_SMARTISAN = 4;
+    public static final int STYLE_CUSTOM = 5;
 
     private View mTarget;
     private ImageView mRefreshView;
@@ -58,17 +62,23 @@ public class PullRefreshLayout extends ViewGroup {
     private int mInitialOffsetTop;
     private boolean mDispatchTargetTouchDown;
     private float mDragPercent;
+    private String customRefreshDrawableClassName;
 
     public PullRefreshLayout(Context context) {
         this(context, null);
     }
 
     public PullRefreshLayout(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.refresh_PullRefreshLayout);
+        this(context, attrs, R.attr.refreshLayoutStyle);
+    }
+
+    public PullRefreshLayout(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.refresh_PullRefreshLayout, defStyleAttr, R.style.RefreshLayoutDefaultStyle);
         final int type = a.getInteger(R.styleable.refresh_PullRefreshLayout_refreshType, STYLE_MATERIAL);
         final int colorsId = a.getResourceId(R.styleable.refresh_PullRefreshLayout_refreshColors, 0);
         final int colorId = a.getResourceId(R.styleable.refresh_PullRefreshLayout_refreshColor, 0);
+        customRefreshDrawableClassName = a.getString(R.styleable.refresh_PullRefreshLayout_refreshDrawableClass);
         a.recycle();
 
         mDecelerateInterpolator = new DecelerateInterpolator(DECELERATE_INTERPOLATION_FACTOR);
@@ -122,6 +132,34 @@ public class PullRefreshLayout extends ViewGroup {
                 break;
             case STYLE_SMARTISAN:
                 mRefreshDrawable = new SmartisanDrawable(getContext(), this);
+                break;
+            case STYLE_CUSTOM:
+                if (TextUtils.isEmpty(customRefreshDrawableClassName)) {
+                    throw new InvalidParameterException("Selected STYLE_CUSTOM but no drawable class provided");
+                } else {
+                    mRefreshDrawable = new MaterialDrawable(getContext(), this);
+                    try {
+                        Class<?> clazz = Class.forName(customRefreshDrawableClassName);
+                        Constructor<?> cons = clazz.getConstructor(Context.class, PullRefreshLayout.class);
+                        Object obj = cons.newInstance(getContext(), this);
+                        if (obj instanceof RefreshDrawable) {
+                            mRefreshDrawable = (RefreshDrawable) obj;
+                        } else {
+                            throw new InvalidParameterException("Wrong refresh drawable type");
+                        }
+
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                    } catch (NoSuchMethodException e) {
+                        e.printStackTrace();
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    } catch (InstantiationException e) {
+                        e.printStackTrace();
+                    } catch (InvocationTargetException e) {
+                        e.printStackTrace();
+                    }
+                }
                 break;
             default:
                 throw new InvalidParameterException("Type does not exist");

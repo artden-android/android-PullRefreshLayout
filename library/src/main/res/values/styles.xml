@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="RefreshLayoutDefaultStyle" parent="android:Widget" >
+        <item name="refreshType">smartisan</item>
+        <item name="refreshDrawableClass">com.your.CustomDrawableClassOnlyEffectsWhenRefreshTypeIsCustom</item>
+    </style>
+</resources>

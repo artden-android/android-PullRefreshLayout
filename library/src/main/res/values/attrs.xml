@@ -1,14 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <declare-styleable name="refresh_PullRefreshLayout">
+
+        <!--the default style attr-->
+        <attr name="refreshLayoutStyle" format="reference"/>
+
+        <!--view attrs-->
         <attr name="refreshType" format="enum">
             <enum name="material" value="0" />
             <enum name="circles" value="1" />
             <enum name="water_drop" value="2" />
             <enum name="ring" value="3" />
             <enum name="smartisan" value="4" />
+            <enum name="custom" value="5" />
         </attr>
         <attr name="refreshColors" format="reference"/>
         <attr name="refreshColor" format="reference"/>
+        <attr name="refreshDrawableClass" format="string"/>
     </declare-styleable>
 </resources>

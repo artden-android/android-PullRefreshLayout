@@ -480,18 +480,38 @@ public class PullRefreshLayout extends ViewGroup {
         }
     }
 
+    // scroll up means scroll upwards
     private boolean canChildScrollUp() {
+
+        if (onSearchScrollingChild != null) {
+            mUpScrollTestView = onSearchScrollingChild.searchScrollChild();
+        }
+
+        boolean canViewScrollup = canViewScrollUp(mUpScrollTestView == null ? mTarget : mUpScrollTestView);
+
+        if (auxiliaryUpScrollTester != null) {
+
+            boolean additionalCanScrollUp = auxiliaryUpScrollTester.canScrollUp();
+            //Log.d("pull", "canChildScrollUp返回值:" + (canViewScrollup || additionalCanScrollUp));
+            return canViewScrollup || additionalCanScrollUp;
+        } else {
+            //Log.d("pull", "canChildScrollUp返回值:" + (canViewScrollup));
+            return canViewScrollup;
+        }
+    }
+
+    private boolean canViewScrollUp(View view) {
         if (android.os.Build.VERSION.SDK_INT < 14) {
-            if (mTarget instanceof AbsListView) {
-                final AbsListView absListView = (AbsListView) mTarget;
+            if (view instanceof AbsListView) {
+                final AbsListView absListView = (AbsListView) view;
                 return absListView.getChildCount() > 0
                         && (absListView.getFirstVisiblePosition() > 0 || absListView.getChildAt(0)
                         .getTop() < absListView.getPaddingTop());
             } else {
-                return mTarget.getScrollY() > 0;
+                return view.getScrollY() > 0;
             }
         } else {
-            return ViewCompat.canScrollVertically(mTarget, -1);
+            return ViewCompat.canScrollVertically(view, -1);
         }
     }
 
@@ -524,4 +544,62 @@ public class PullRefreshLayout extends ViewGroup {
     public static interface OnRefreshListener {
         public void onRefresh();
     }
+
+
+
+    // --------------------------------added by yimin-----------------------------------------
+
+    public boolean isRefreshing() {
+        return mRefreshing;
+    }
+
+    /**
+     * 辅助上滑判定条件
+     */
+    public interface AuxiliaryUpScrollTester {
+        boolean canScrollUp();
+    }
+
+    /**
+     * 在每次滑动时，给出一次指定滚动主体的机会
+     */
+    public interface OnSearchScrollingChild {
+        View searchScrollChild();
+    }
+
+    /**
+     * 辅助的上滑判定条件
+     * @param tester
+     */
+    public void setAuxiliaryUpScrollTester(AuxiliaryUpScrollTester tester) {
+        auxiliaryUpScrollTester = tester;
+    }
+
+    /**
+     * PullRefresh在每次需要判断是否能够上滑时(canScrollUp)，先调用searchScrollChild获取滚动主体，
+     * 适用于滚动主体动态改变的情景，例如PullRefresh包了一个ViewPager，ViewPager包了N个recyclerView
+     *
+     * @param onSearchScrollingChild
+     */
+    public void setOnSearchScrollingChild(OnSearchScrollingChild onSearchScrollingChild) {
+        this.onSearchScrollingChild = onSearchScrollingChild;
+    }
+
+    /**
+     * Set the view to test for up scrolling availability, this is used
+     * for cases where the scrolling view is not a direct child of pull refresh layout
+     *
+     * 适用于滚动主体不是直接child view，但是滚动主体不会动态改变的情况
+     *
+     * @param mUpScrollTestView the actual scrolling view
+     */
+    public void setUpScrollTestView(View mUpScrollTestView) {
+        this.mUpScrollTestView = mUpScrollTestView;
+    }
+
+    // custom scrolling up checkers
+    private View mUpScrollTestView;
+    private AuxiliaryUpScrollTester auxiliaryUpScrollTester;
+    private OnSearchScrollingChild onSearchScrollingChild;
+
 }
